@@ -22,8 +22,10 @@
 #endif
 
 #include <stdlib.h>
-#if __has_include(<sys/random.h>)
-    #include <sys/random.h>
+#if !defined(__ANDROID__) && (defined(__linux__) || defined(__FreeBSD__))
+    #if __has_include(<sys/random.h>)
+        #include <sys/random.h>
+    #endif
 #endif
 #ifndef GRND_NONBLOCK
     #define GRND_NONBLOCK 1
@@ -121,9 +123,9 @@ static uint32_t hashString(const char* str) {
 
 static uint64_t getEntropy(void) {
     uint64_t seed = 0;
-#if defined(__linux__) || defined(__FreeBSD__)
+#if !defined(__ANDROID__) && (defined(__linux__) || defined(__FreeBSD__))
     #if __has_include(<sys/random.h>)
-    if (getrandom(&seed, sizeof(seed), GRND_NONBLOCK) == sizeof(seed)) {
+    if (getrandom(&seed, sizeof(seed), GRND_NONBLOCK) == (ssize_t) sizeof(seed)) {
         return seed;
     }
     #endif
